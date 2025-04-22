@@ -142,7 +142,7 @@ func Init() {
 		common.GameRankingCategories[gameName] = rankingCategories
 	}
 
-	scheduler.Every(1).Hour().Do(func() {
+	scheduler.Every(1).Hour().SingletonMode().Do(func() {
 		for _, gameName := range common.GameNames {
 			for _, category := range common.GameRankingCategories[gameName] {
 				categoryId := category.CategoryId
@@ -161,9 +161,12 @@ func Init() {
 						}
 					}
 
+					t0 := time.Now()
 					err := database.UpdateRankingEntries(categoryId, subCategory.SubCategoryId, subCategory.Game)
 					if err != nil {
-						log.Print("SERVER ", gameName+"/"+categoryId+"/"+subCategory.SubCategoryId, err.Error())
+						log.Printf("SERVER %s/%s/%s %s", gameName, categoryId, subCategory.SubCategoryId, err)
+					} else {
+						log.Printf("SERVER %s/%s/%s done in %.2fs", gameName, categoryId, subCategory.SubCategoryId, time.Now().Sub(t0).Seconds())
 					}
 				}
 			}
